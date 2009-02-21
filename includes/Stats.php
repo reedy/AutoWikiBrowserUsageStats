@@ -96,35 +96,35 @@ function htmlstats(){
 	
 	//Number of sessions, Number of saves,
 	$row = $db->no_of_sessions_and_saves();
-	PrintTableRow('Number of Sessions', $row['nosessions']);
-	PrintTableRow('Total Number of Saves', $row['totalsaves']);
+	PrintTableRow('Number of Sessions', FormatNumber($row['nosessions']));
+	PrintTableRow('Total Number of Saves', FormatNumber($row['totalsaves']));
 
 	// Number of wikis
 	$row = $db->wiki_count();
-	PrintTableRow('Number of Wiki Sites', $row['Wikis']);
+	PrintTableRow('Number of Wiki Sites', FormatNumber($row['Wikis']));
 
 	// Username count
 	$row = $db->username_count();
-	PrintTableRow('Number of Usernames Known', $row['usercount']);
+	PrintTableRow('Number of Usernames Known', FormatNumber($row['usercount']));
 
 	//Unique users count (username/wiki)
 	$row = $db->unique_username_count();
-	PrintTableRow('Number of Unique Users<sup><a href="#1">1</a></sup>', $row['UniqueUsersCount']);
+	PrintTableRow('Number of Unique Users<sup><a href="#1">1</a></sup>', FormatNumber($row['UniqueUsersCount']));
 	
 	//Number of plugins known
 	$row = $db->plugin_count();
-	PrintTableRow('Number of Plugins Known', $row['Plugins']);
+	PrintTableRow('Number of Plugins Known', FormatNumber($row['Plugins']));
 
 	// Number of log entries
 	$row = $db->db_mysql_query_single_row('SELECT COUNT(DISTINCT LogID) as LogIDCount FROM log', 'htmlstats', 'Stats'); // note: we'll only display this on this web page, hence doing it here
-	PrintTableRow('Number of Log Entries', $row['LogIDCount']);
+	PrintTableRow('Number of Log Entries', FormatNumber($row['LogIDCount']));
 
 	// Record count
 	$row = $db->record_count();
-	PrintTableRow('Total Number of Records in Database', $row['RecordCount']);
+	PrintTableRow('Total Number of Records in Database', FormatNumber($row['RecordCount']));
 
 	//Sessions & Saves per sites
-	echo <<< EOF
+	echo '
 
 </table>
 <p/>
@@ -137,21 +137,21 @@ function htmlstats(){
 		<th scope="col" class="sortable">Number of Saves</th>
 	</tr>
 </thead>
-EOF;
+';
 
 	$result = $db->sites();
 	
 	while($row = $result->fetch_assoc())
 	{
 		$site=BuildWikiHostname($row['LangCode'], $row['Site']);		
-		echo <<<EOF
+		echo '
 
 	<tr>
-		<td>{$site}</td>
-		<td>{$row['CountOfSessionID']}</td>
-		<td>{$row['SumOfSaves']}</td>
+		<td>'.$site.'</td>
+		<td>'.FormatNumber($row['CountOfSessionID']).'</td>
+		<td>'.FormatNumber($row['SumOfSaves']).'</td>
 	</tr>
-EOF;
+';
 	}
 		  
 	$result->close();
@@ -161,7 +161,7 @@ EOF;
 	OS_XHTML($db->OSs(true), ' (last 30 days)');
 	
 	//Number of saves by language (culture)
-	echo <<< EOF
+	echo '
 
 </table>
 <p/>
@@ -174,18 +174,18 @@ EOF;
 		<th scope="col" class="sortable">Number of Saves</th>
 	</tr>
 </thead>
-EOF;
+';
 	$result = $db->cultures();
 	
 	while($row = $result->fetch_assoc()) {
-		  echo <<< EOF
+		  echo '
 
 	<tr>
-		<td>{$row['Language']}</td>
-		<td>{$row['Country']}</td>
-		<td>{$row['SumOfSaves']}</td>
+		<td>'.$row['Language'].'</td>
+		<td>'.$row['Country'].'</td>
+		<td>'.FormatNumber($row['SumOfSaves']).'</td>
 	</tr>
-EOF;
+';
 	}
 	
 	$result->close();
@@ -193,7 +193,7 @@ EOF;
 	//User with the most saves
 	$row = $db->busiest_user();
 	$site=BuildWikiHostname($row['LangCode'], $row['Site']);
-	echo <<< EOF
+	echo '
 
 </table>
 <p/>
@@ -207,14 +207,14 @@ EOF;
 	</tr>
 </thead>
 	<tr>
-		<td>{$site}</td>
-		<td>{$row['LangCode']}</td>
-		<td>{$row['SumOfSaves']}</td>
+		<td>'.$site.'</td>
+		<td>'.FormatNumber($row['LangCode']).'</td>
+		<td>'.FormatNumber($row['SumOfSaves']).'</td>
 	</tr>
-EOF;
+';
 
 	// List of plugins
-	echo <<< EOF
+	echo '
 
 </table>
 <p/>
@@ -222,20 +222,22 @@ EOF;
 	<caption>Known Plugins</caption>
 <thead>
 	<tr>
-		<th colspan="3" scope="col" class="sortable">Plugin</th>
+		<th colspan="2" scope="col" class="sortable">Plugin</th>
+		<th colspan="1" scope="col" class="sortable">Plugin Type</th>
 	</tr>
 </thead>
-EOF;
+';
 
 	$result = $db->plugins();
 	
 	while ($row = $result->fetch_assoc()) {
-		echo <<< EOF
-
+		$plugintype=PluginType($row['PluginType']);
+		echo '
 	<tr>
-		<td colspan="3" align="left">{$row['Plugin']}</td>
+		<td colspan="2" align="left">'.$row['Plugin'].'</td>
+		<td colspan="2" align="left">'.PluginType($row['PluginType']).'</td>
 	</tr>
-EOF;
+';
 	}
 	
 	$result->close();
@@ -286,12 +288,12 @@ their username or switching to a different wiki mid-session.</p>
 
 // Helper routines:
 function OS_XHTML($result, $headersuffix) {
-	echo <<< EOF
+	echo '
 
 </table>
 <p/>
 <table class="sortable">
-<caption>Operating Systems{$headersuffix}</caption>
+<caption>Operating Systems'.$headersuffix.'</caption>
 <thead>
 	<tr>
 		<th scope="col" class="sortable">OS</th>
@@ -299,18 +301,18 @@ function OS_XHTML($result, $headersuffix) {
 		<th scope="col" class="sortable">Number of Saves</th>
 	</tr>
 </thead>
-EOF;
+';
 
 	while($row = $result->fetch_assoc())
 	{
-		echo <<< EOF
+		echo '
 
 	<tr>
-		<td>{$row['OS']}</td>
-		<td>{$row['CountOfSessionID']}</td>
-		<td>{$row['SumOfSaves']}</td>
+		<td>'.$row['OS'].'</td>
+		<td>'.FormatNumber($row['CountOfSessionID']).'</td>
+		<td>'.FormatNumber($row['SumOfSaves']).'</td>
 	</tr>
-EOF;
+';
 	}
 	
 	$result->close();
@@ -342,12 +344,30 @@ function BuildWikiHostname($lang, $site) {
 	return "<a href=\"http://{$site}/\">{$site}</a>";
 }
 
+function PluginType($plugintype)
+{
+	switch ($plugintype)
+	{
+		case 0:
+			return "AWB Plugin";
+		case 1:
+			return "ListMaker Plugin";
+		default:
+			return "unknown";
+	}
+}
+
+function FormatNumber($num)
+{
+	return number_format($num, 0, '.', ',');
+}
+
 function PrintTableRow($header, $data) {
-	echo <<<EOF
+	echo '
 	
 	<tr>
-		<th align="left" scope="row">{$header}</th><td>{$data}</td>
+		<th align="left" scope="row">'.$header.'</th><td>'.$data.'</td>
 	</tr>
-EOF;
+';
 }
 ?>
